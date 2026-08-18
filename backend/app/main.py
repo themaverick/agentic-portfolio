@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # Add backend directory to sys.path for Vercel serverless deployment
@@ -68,3 +69,16 @@ async def health_check():
         "environment": settings.ENVIRONMENT,
         "version": "1.0.0"
     }
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    import traceback
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": str(exc),
+            "type": exc.__class__.__name__,
+            "traceback": traceback.format_exc(),
+        },
+    )

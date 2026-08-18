@@ -25,11 +25,15 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         client_ip = request.client.host if request.client else "127.0.0.1"
         client_hash = f"ip_{client_ip}"
 
-        allowed, remaining, retry_after = await check_rate_limit(
-            identifier=client_hash,
-            limit=self.limit,
-            window_seconds=self.window_seconds,
-        )
+        try:
+            allowed, remaining, retry_after = await check_rate_limit(
+                identifier=client_hash,
+                limit=self.limit,
+                window_seconds=self.window_seconds,
+            )
+        except Exception as e:
+            # Fail open if Redis is unavailable in serverless environment
+            allowed, remaining, retry_after = True, self.limit, 0
 
         if not allowed:
             time_unit = f"{self.window_seconds // 60} minute(s)" if self.window_seconds >= 60 else f"{self.window_seconds} seconds"
