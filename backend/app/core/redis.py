@@ -32,7 +32,12 @@ _rate_limit_script = None
 def get_redis() -> aioredis.Redis:
     global redis_client
     if redis_client is None:
-        redis_client = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+        redis_client = aioredis.from_url(
+            settings.REDIS_URL,
+            decode_responses=True,
+            socket_connect_timeout=0.5,
+            socket_timeout=0.5,
+        )
     return redis_client
 
 
