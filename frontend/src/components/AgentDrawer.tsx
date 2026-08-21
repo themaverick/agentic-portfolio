@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAgentStore } from '../store/agentStore';
 import { getApiUrl } from '../config/api';
-import { Bot, X, Send, Terminal } from 'lucide-react';
+import { Bot, X, Send, Terminal, Brain, CheckCircle2, Loader2, Wrench } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export const AgentDrawer: React.FC = () => {
@@ -13,7 +13,9 @@ export const AgentDrawer: React.FC = () => {
     sessionId,
     messages,
     addMessage,
+    appendThoughtToLastMessage,
     appendTokenToLastMessage,
+    addOrUpdateToolCallInLastMessage,
     isStreaming,
     setIsStreaming,
     activeTool,
@@ -98,7 +100,18 @@ export const AgentDrawer: React.FC = () => {
           try {
             const data = JSON.parse(dataStr);
 
-            if (eventType === 'tool_start') {
+            if (eventType === 'thought') {
+              if (data.token) {
+                appendThoughtToLastMessage(data.token);
+              }
+            } else if (eventType === 'tool_call') {
+              addOrUpdateToolCallInLastMessage(data);
+              if (data.status === 'running') {
+                setActiveTool(data.tool);
+              } else if (data.status === 'completed') {
+                setActiveTool(null);
+              }
+            } else if (eventType === 'tool_start') {
               setActiveTool(data.tool);
             } else if (eventType === 'ui_action') {
               if (data.action === 'navigate' && data.route) {
@@ -176,7 +189,7 @@ export const AgentDrawer: React.FC = () => {
                     Gemini 2.5 Flash
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400">Factual Grounding • pgvector HNSW • Kafka</p>
+                <p className="text-[11px] text-slate-400">Dynamic Tool Calling • Reasoning • pgvector</p>
               </div>
             </div>
             <button
@@ -200,15 +213,72 @@ export const AgentDrawer: React.FC = () => {
                   </div>
                 )}
                 <div
-                  className={`max-w-[82%] px-4 py-3 rounded-2xl ${
+                  className={`max-w-[85%] px-4 py-3 rounded-2xl ${
                     msg.role === 'user'
                       ? 'bg-sky-600 text-white rounded-br-none'
                       : 'bg-slate-900/90 border border-slate-800 text-slate-200 rounded-bl-none shadow-md'
                   }`}
                 >
                   {msg.role === 'assistant' ? (
-                    <div className="prose prose-invert text-xs leading-relaxed max-w-none">
-                      <ReactMarkdown>{msg.content || '...'}</ReactMarkdown>
+                    <div>
+                      {/* Thought / Reasoning Block */}
+                      {msg.thought && (
+                        <div className="mb-3 p-3 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-200 text-xs shadow-inner">
+                          <div className="flex items-center gap-2 mb-1.5 font-semibold text-[11px] text-purple-300 tracking-wide uppercase">
+                            <Brain className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+                            <span>Thought Process</span>
+                          </div>
+                          <p className="text-[11px] leading-relaxed text-purple-200/90 font-mono whitespace-pre-wrap">
+                            {msg.thought}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Tool Executions List */}
+                      {msg.toolCalls && msg.toolCalls.length > 0 && (
+                        <div className="mb-3 space-y-2">
+                          {msg.toolCalls.map((tc) => (
+                            <div
+                              key={tc.id || tc.tool}
+                              className="p-2.5 rounded-xl bg-slate-950/80 border border-cyan-500/30 text-slate-200 text-[11px] font-mono shadow-sm flex flex-col gap-1"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-cyan-400 font-bold">
+                                  <Wrench className="w-3.5 h-3.5 text-cyan-400" />
+                                  <span>{tc.tool}</span>
+                                </div>
+                                <span className="flex items-center gap-1 text-[10px]">
+                                  {tc.status === 'completed' ? (
+                                    <span className="text-emerald-400 flex items-center gap-1 font-sans font-medium">
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Executed
+                                    </span>
+                                  ) : (
+                                    <span className="text-amber-400 flex items-center gap-1 font-sans font-medium">
+                                      <Loader2 className="w-3 h-3 animate-spin text-amber-400" /> Running
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                              {tc.args && Object.keys(tc.args).length > 0 && (
+                                <div className="text-[10px] text-slate-400 bg-slate-900/60 p-1.5 rounded border border-slate-800">
+                                  {JSON.stringify(tc.args)}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Final Answer Text */}
+                      {msg.content ? (
+                        <div className="prose prose-invert text-xs leading-relaxed max-w-none">
+                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        !msg.thought && (!msg.toolCalls || msg.toolCalls.length === 0) && (
+                          <div className="text-slate-500 text-xs italic">Thinking...</div>
+                        )
+                      )}
                     </div>
                   ) : (
                     <p className="text-xs">{msg.content}</p>
