@@ -147,10 +147,17 @@ async def _execute_backend_tool(
     if tool_name == "search_projects":
         results = await search_projects_hybrid(db, query, match_count=3)
         if results:
-            context = "\n---\n".join([
-                f"[Project: {p['title']}]\nTagline: {p['tagline']}\nProblem: {p['problem_statement']}\nSolution: {p['solution_overview']}"
-                for p in results
-            ])
+            context_blocks = []
+            for p in results:
+                metrics = p.get("impact_metrics") or []
+                metrics_str = f"\nImpact Metrics: {'; '.join(metrics)}" if isinstance(metrics, list) else f"\nImpact Metrics: {metrics}"
+                arch = p.get("architecture_metadata")
+                arch_str = f"\nArchitecture Details: {json.dumps(arch)}" if arch else ""
+                
+                context_blocks.append(
+                    f"[Project: {p['title']}]\nTagline: {p['tagline']}\nProblem: {p['problem_statement']}\nSolution: {p['solution_overview']}{metrics_str}{arch_str}"
+                )
+            context = "\n---\n".join(context_blocks)
             proj_slug = results[0]["slug"]
         else:
             context = "No matching projects found in database."
@@ -158,10 +165,14 @@ async def _execute_backend_tool(
     elif tool_name == "search_experiences":
         results = await search_experiences_hybrid(db, query, match_count=3)
         if results:
-            context = "\n---\n".join([
-                f"[Experience: {e['role']} at {e['company']}]\nSummary: {e['summary']}\nAchievements: {' '.join(e.get('achievements', []))}"
-                for e in results
-            ])
+            context_blocks = []
+            for e in results:
+                achievements = e.get("achievements") or []
+                ach_str = f"\nImpact Metrics & Key Achievements: {'; '.join(achievements)}" if isinstance(achievements, list) else f"\nImpact Metrics: {achievements}"
+                context_blocks.append(
+                    f"[Experience: {e['role']} at {e['company']}]\nSummary: {e['summary']}{ach_str}"
+                )
+            context = "\n---\n".join(context_blocks)
             comp_slug = results[0]["company"].lower().replace(" ", "-")
         else:
             context = "No matching work experience found in database."

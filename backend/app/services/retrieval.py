@@ -97,10 +97,12 @@ async def search_all_entities_hybrid(
 
     combined = []
     for p in projects:
+        metrics_list = p.get("impact_metrics") or []
+        metrics_str = f"\nImpact Metrics: {'; '.join(metrics_list)}" if metrics_list else ""
         combined.append({
             "entity_type": "project",
             "title": f"Project: {p['title']}",
-            "content": f"Tagline: {p['tagline']}\nProblem: {p['problem_statement']}\nSolution: {p['solution_overview']}",
+            "content": f"Tagline: {p['tagline']}\nProblem: {p['problem_statement']}\nSolution: {p['solution_overview']}{metrics_str}",
             "project_slug": p["slug"],
             "rrf_score": float(p["rrf_score"])
         })
