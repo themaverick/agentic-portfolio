@@ -8,7 +8,7 @@ from google import genai
 from app.core.config import settings
 from app.core.mongo import get_mongo_db
 from app.core.kafka import produce_event
-from app.models.sql_models import Skill, Project, RecruiterLead
+from app.models.sql_models import Skill, Project, Experience, RecruiterLead
 from app.models.mongo_models import JobDescriptionAnalysisDocument, SkillAlignment
 
 import json
@@ -23,10 +23,10 @@ async def analyze_job_description(
 ) -> Dict[str, Any]:
     """
     Parses JD text using Gemini LLM, evaluates match alignment against
-    Yogesh's canonical tech stack & projects, computes fit score (0-100),
-    extracts skill evidence & gaps, and saves document in MongoDB 'jd_analyses'.
+    Yogesh's canonical tech stack, projects, and work experiences from Postgres,
+    computes fit score (0-100), extracts skill evidence & gaps, and saves document in MongoDB 'jd_analyses'.
     """
-    # Fetch canonical skills & projects from Postgres for context grounding
+    # Fetch canonical skills, projects, and experiences from Postgres for context grounding
     skills_res = await db.execute(select(Skill))
     skills = skills_res.scalars().all()
     canonical_tech = [s.name for s in skills]
@@ -34,6 +34,13 @@ async def analyze_job_description(
     projects_res = await db.execute(select(Project))
     projects = projects_res.scalars().all()
     canonical_projects = [f"{p.title}: {p.tagline} (Problem: {p.problem_statement} | Solution: {p.solution_overview})" for p in projects]
+
+    exp_res = await db.execute(select(Experience))
+    experiences = exp_res.scalars().all()
+    canonical_experiences = [
+        f"{e.company} ({e.role}): {e.summary}" + (f" | Key Impact: {'; '.join(e.achievements)}" if e.achievements else "")
+        for e in experiences
+    ]
 
     fit_score = 85.0
     extracted_tech_stack = []
@@ -54,9 +61,7 @@ Candidate Background Context (Yogesh Sharma):
 - Projects:
   {chr(10).join(['- ' + cp for cp in canonical_projects])}
 - Work Experience:
-  - Thuriyam AI (AI & Backend Engineer Intern): Architected async FastAPI microservices, PostgreSQL pgvector hybrid retrieval, Redis caching.
-  - IISc Bangalore NLP Lab (Research Intern): Low-resource LLM fine-tuning, domain adaptation.
-  - AI Stealth Startup (AI Software Engineer Intern): Production RAG pipelines, prompt engineering, agentic workflows.
+  {chr(10).join(['- ' + ce for ce in canonical_experiences])}
 
 Target Role: {target_role or 'Applied AI / Systems Engineer'}
 Target Company: {company_name or 'Hiring Team'}
