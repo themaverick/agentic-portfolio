@@ -3,20 +3,29 @@ import json
 import uuid
 import math
 import os
+import sys
 from datetime import date
 from dotenv import load_dotenv
 import asyncpg
 from google import genai
 
-load_dotenv()
+# Load .env.local first if available, else .env
+load_dotenv(".env.local")
+load_dotenv(".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/portfolio_db")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "gemini-embedding-001")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 # Strip async driver prefix if present for raw asyncpg connection
 if "postgresql+asyncpg://" in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
+
+def is_production_db(url: str) -> bool:
+    cloud_indicators = ["neon.tech", "amazonaws.com", "supabase.co", "render.com", "elephantsql.com"]
+    return any(indicator in url for indicator in cloud_indicators) or ENVIRONMENT.lower() == "production"
+
 
 def get_embedding(text: str) -> list[float]:
     """Generates 768-dim embedding via Gemini or deterministic fallback vector."""
@@ -374,4 +383,16 @@ async def seed():
         await conn.close()
 
 if __name__ == "__main__":
+    confirm_prod = "--confirm-prod" in sys.argv or "--prod" in sys.argv
+    if is_production_db(DATABASE_URL) and not confirm_prod:
+        masked_url = DATABASE_URL
+        if "@" in masked_url:
+            user_part, host_part = masked_url.split("@", 1)
+            masked_url = f"{user_part.split('://')[0]}://***:***@{host_part}"
+        print(f"\n[ERROR] Production/Cloud database target detected!")
+        print(f"Target URL: {masked_url}")
+        print(f"To seed a production database, pass '--confirm-prod': python scripts/seed_data.py --confirm-prod\n")
+        sys.exit(1)
+    
     asyncio.run(seed())
+
