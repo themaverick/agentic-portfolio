@@ -180,6 +180,65 @@ SEED_EXPERIENCES = [
     }
 ]
 
+SEED_FAQS = [
+    {
+        "question": "What is Yogesh's background, education, and target career roles?",
+        "answer": "Yogesh Sharma is a 2026 B.Tech undergraduate at IIT Jodhpur with a Minor in Artificial Intelligence & Data Engineering. He targets AI Engineer, Data Scientist, and Machine Learning Engineer roles. He specializes in LLMs, RAG retrieval architectures, vector databases, high-performance backends, and AI safety guardrails.",
+        "category": "general",
+        "related_project_slug": None,
+        "related_company_slug": None,
+    },
+    {
+        "question": "Why did you build a BERT guardrail model instead of using LLM guardrails at AI Stealth Startup?",
+        "answer": "Sub-50ms latency was mandatory for real-time safety filtering. Fine-tuned BERT achieved 95.8% accuracy and 0.96 micro-F1 at >95% speed improvement over heavy LLM guardrails (like Llama-Guard or GPT-4-mini) while consuming a fraction of GPU compute costs.",
+        "category": "technical_tradeoff",
+        "related_project_slug": None,
+        "related_company_slug": "ai-stealth-startup",
+    },
+    {
+        "question": "How did you achieve 97% LLM cost reduction at Thuriyam AI?",
+        "answer": "Engineered a deterministic subword pre-filtering engine to route transcripts prior to heavy Gemini LLM analysis. This routed only the 3% of relevant transcripts containing competitor mentions or feature requests, reducing API overhead by 97% while maintaining >99.98% reliability across 300K+ monthly requests.",
+        "category": "technical_tradeoff",
+        "related_project_slug": None,
+        "related_company_slug": "thuriyam-ai",
+    },
+    {
+        "question": "How does soft-prompt tuning work in your IISc Bangalore NLP Lab research?",
+        "answer": "Utilized soft-prompt tuning on e5-Mistral-7B-Instruct with NV-Retriever hard negative mining. By updating only 0.001% of model parameters, we achieved a +5% STS improvement and +2% retrieval improvement while drastically reducing GPU training memory requirements.",
+        "category": "technical_tradeoff",
+        "related_project_slug": None,
+        "related_company_slug": "iisc-nlp-lab",
+    },
+    {
+        "question": "How is the Autonomous Portfolio Agent platform architected?",
+        "answer": "The platform is built with FastAPI, PostgreSQL pgvector hybrid search (HNSW cosine + TSVector FTS), MongoDB document storage, Redis sliding-window limiters, and Apache Kafka telemetry streaming. It streams agent responses via SSE (Server-Sent Events) and issues real-time UI navigation commands.",
+        "category": "architecture",
+        "related_project_slug": "autonomous-portfolio-agent",
+        "related_company_slug": None,
+    },
+    {
+        "question": "What techniques were used in the Inter-IIT Dream11 Predictive Analytics project?",
+        "answer": "Processed 10 years of historical match data for 2,500 players using PySpark/Pandas pipelines. Benchmarked tree-based ensemble models (LightGBM, XGBoost, Random Forest, SVR) achieving 27 MAPE, and integrated Qwen GenAI for SHAP explainability, securing 6th position out of 23 IITs at Inter-IIT Tech Meet 13.0.",
+        "category": "architecture",
+        "related_project_slug": "inter-iit-dream11-predictive-analytics",
+        "related_company_slug": None,
+    },
+    {
+        "question": "What is Attentive Aggregation for text embeddings?",
+        "answer": "Attentive Aggregation is a training-free token pooling technique for transformer models (such as Llama-3-1B). It uses key-value self-attention weights to aggregate token representations, outperforming standard mean pooling by +4.8% on retrieval benchmarks without requiring model retraining.",
+        "category": "architecture",
+        "related_project_slug": "attentive-aggregation-embeddings",
+        "related_company_slug": None,
+    },
+    {
+        "question": "Why use Reciprocal Rank Fusion (RRF) for hybrid search?",
+        "answer": "RRF (with k=60) combines dense vector rankings (HNSW cosine) with sparse text rankings (TSVector FTS) without requiring arbitrary score normalization across different score distributions. It runs efficiently inside a single PostgreSQL query.",
+        "category": "technical_tradeoff",
+        "related_project_slug": "autonomous-portfolio-agent",
+        "related_company_slug": None,
+    }
+]
+
 SEED_TRADEOFFS = [
     {
         "topic": "AI Safety: Lightweight BERT Guardrail vs. Heavy LLM Guardrail",
@@ -215,79 +274,6 @@ SEED_TRADEOFFS = [
     }
 ]
 
-SEED_CHUNKS = [
-    {
-        "entity_type": "bio",
-        "slug": "about-yogesh",
-        "title": "About Yogesh Sharma",
-        "content": "Yogesh Sharma is a 2026 undergraduate at IIT Jodhpur pursuing a B.Tech with a Minor in Artificial Intelligence & Data Engineering. He targets AI Engineer, Data Scientist, and ML Engineer roles. Yogesh has completed industry and research internships at Thuriyam AI (FastAPI & Gemini LLM cost optimization), AI Stealth Startup (BERT guardrail safety models & dataset mining), and IISc Bangalore NLP Lab (cross-lingual contrastive embeddings & soft-prompt tuning). He secured 6th rank out of 23 IITs at Inter-IIT Tech Meet 13.0.",
-        "metadata": {"category": "general", "author": "Yogesh Sharma", "target_roles": ["AI Engineer", "Data Scientist", "ML Engineer"]}
-    },
-    {
-        "entity_type": "project",
-        "slug": "autonomous-portfolio-agent",
-        "title": "Autonomous Portfolio Agent Platform",
-        "content": "The Autonomous Portfolio Agent is built using FastAPI, PostgreSQL pgvector hybrid search (HNSW cosine + FTS RRF k=60), MongoDB document storage, Redis sliding window limiters, and Apache Kafka telemetry streaming. It streams agent responses via SSE (Server-Sent Events) and issues real-time UI navigation commands.",
-        "metadata": {"project_slug": "autonomous-portfolio-agent"}
-    },
-    {
-        "entity_type": "project",
-        "slug": "inter-iit-dream11-predictive-analytics",
-        "title": "Inter-IIT Dream11 Predictive Analytics & GenAI",
-        "content": "Built scalable PySpark and Pandas feature pipelines across 10 years of historical match data for 2,500 players. Benchmarked tree-based ensemble models (LightGBM, XGBoost, Random Forest, SVR) achieving 27 MAPE and securing 6th position out of 23 IITs at Inter-IIT Tech Meet 13.0 (IIT Bombay). Integrated Qwen GenAI for SHAP explainability insights.",
-        "metadata": {"project_slug": "inter-iit-dream11-predictive-analytics"}
-    },
-    {
-        "entity_type": "project",
-        "slug": "attentive-aggregation-embeddings",
-        "title": "Attentive Aggregation for Text Embeddings",
-        "content": "Attentive Aggregation is a training-free technique for Llama-3-1B embeddings that uses transformer key-value self-attention weights to aggregate token representations, outperforming standard mean pooling by +4.8% on retrieval benchmarks.",
-        "metadata": {"project_slug": "attentive-aggregation-embeddings"}
-    },
-    {
-        "entity_type": "experience",
-        "slug": "thuriyam-ai",
-        "title": "AI & Backend Engineer Intern at Thuriyam AI",
-        "content": "Engineered automated transcription and NLP analysis pipelines using FastAPI and Gemini models on AWS processing 10K+ daily call recordings. Built a deterministic subword pre-filtering engine reducing LLM API costs by 97% while maintaining >99.98% reliability across 300,000+ monthly requests with Dockerized microservices.",
-        "metadata": {"company": "Thuriyam AI", "role": "AI & Backend Engineer Intern"}
-    },
-    {
-        "entity_type": "experience",
-        "slug": "ai-stealth-startup",
-        "title": "Data Scientist Intern at AI Stealth Startup",
-        "content": "Curated a 150K-sample multi-label safety dataset and trained a BERT-based guardrail model achieving 95.8% accuracy, 0.96 micro-F1, and <50 ms inference latency (>95% faster than LLM guardrails). Maintained >0.83 F1 on NSFW, 0.63 on prompt injection, and 0.99+ on self-harm/illegal content.",
-        "metadata": {"company": "AI Stealth Startup", "role": "Data Scientist Intern"}
-    },
-    {
-        "entity_type": "experience",
-        "slug": "iisc-nlp-lab",
-        "title": "NLP Research Intern at IISc Bangalore NLP Lab",
-        "content": "Researched computational cost reduction for LLM encoders in semantic retrieval. Created a 180K+ sample cross-lingual embedding dataset using NV-Retriever hard negative mining with e5-Mistral-7B-Instruct. Achieved 5% STS improvement and 2% retrieval improvement via soft-prompt tuning on 0.001% parameters.",
-        "metadata": {"company": "IISc Bangalore NLP Lab", "role": "NLP Research Intern"}
-    },
-    {
-        "entity_type": "tradeoff",
-        "slug": "bert-guardrail-tradeoff",
-        "title": "Architectural Rationale: BERT Guardrail vs LLM Moderation",
-        "content": "Why fine-tuned BERT over LLM guardrails? Sub-50ms latency is mandatory for real-time AI safety filtering. BERT achieved 95.8% accuracy at >95% speed improvement over heavy LLM guardrails while reducing compute cost exponentially.",
-        "metadata": {"topic": "AI Safety"}
-    },
-    {
-        "entity_type": "tradeoff",
-        "slug": "llm-prefiltering-tradeoff",
-        "title": "Architectural Rationale: Subword Pre-filtering Engine",
-        "content": "Why subword pre-filtering? Processing 100% of raw audio transcripts with heavy LLM models incurs massive API overhead. Routing only the 3% of filtered relevant transcripts reduced LLM costs by 97% with zero loss in competitor intelligence extraction quality.",
-        "metadata": {"topic": "Cost Optimization"}
-    },
-    {
-        "entity_type": "education",
-        "slug": "iit-jodhpur",
-        "title": "Education & Academic Background at IIT Jodhpur",
-        "content": "Indian Institute of Technology (IIT) Jodhpur (2022 - 2026). Degree: B.Tech in Chemical Engineering with Minor in Artificial Intelligence & Data Engineering (CGPA: 7.79). Core coursework: Machine Learning, Deep Learning, Probability & Statistics, Linear Algebra, Data Structures & Algorithms. Achievements: 6th out of 23 IITs at Inter-IIT Tech Meet 13.0, Top 10 ML Kaggle Challenge worldwide by RAID.",
-        "metadata": {"institution": "IIT Jodhpur", "degree": "B.Tech + Minor in AI & Data Engineering"}
-    }
-]
-
 async def seed():
     print(f"Connecting to database at {DATABASE_URL}...")
     conn = await asyncpg.connect(DATABASE_URL)
@@ -302,57 +288,75 @@ async def seed():
 
         # Clean existing tables for fresh seed
         print("Cleaning existing portfolio records...")
-        await conn.execute("DELETE FROM portfolio_chunks;")
         await conn.execute("DELETE FROM system_tradeoffs;")
+        await conn.execute("DELETE FROM faqs;")
         await conn.execute("DELETE FROM experiences;")
         await conn.execute("DELETE FROM projects;")
         await conn.execute("DELETE FROM skills;")
 
-        # Seed Skills
+        # 1. Seed Skills
         print("Seeding Skills...")
-        for name, category, prof in SEED_SKILLS:
+        for name, category, proficiency in SEED_SKILLS:
             await conn.execute(
                 """
                 INSERT INTO skills (name, category, proficiency_level)
                 VALUES ($1, $2, $3)
                 ON CONFLICT (name) DO UPDATE SET category = EXCLUDED.category, proficiency_level = EXCLUDED.proficiency_level
                 """,
-                name, category, prof
+                name, category, proficiency
             )
 
-        # Seed Projects
-        print("Seeding Projects...")
-        for p in SEED_PROJECTS:
+        # 2. Seed Projects with Direct Vector Embeddings
+        print("Seeding Projects with Direct Vector Embeddings...")
+        for proj in SEED_PROJECTS:
+            text_to_embed = f"{proj['title']} - {proj['tagline']}. Problem: {proj['problem_statement']}. Solution: {proj['solution_overview']}"
+            embedding = get_embedding(text_to_embed)
+            vec_str = f"[{','.join(str(x) for x in embedding)}]"
+
             await conn.execute(
                 """
-                INSERT INTO projects (slug, title, tagline, problem_statement, solution_overview, architecture_metadata, impact_metrics, github_url, live_demo_url, is_featured, display_order)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-                ON CONFLICT (slug) DO UPDATE SET
-                    title = EXCLUDED.title,
-                    tagline = EXCLUDED.tagline,
-                    problem_statement = EXCLUDED.problem_statement,
-                    solution_overview = EXCLUDED.solution_overview,
-                    architecture_metadata = EXCLUDED.architecture_metadata,
-                    impact_metrics = EXCLUDED.impact_metrics;
+                INSERT INTO projects (slug, title, tagline, problem_statement, solution_overview, architecture_metadata, impact_metrics, github_url, live_demo_url, is_featured, display_order, embedding)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CAST($12 AS vector))
                 """,
-                p["slug"], p["title"], p["tagline"], p["problem_statement"], p["solution_overview"],
-                json.dumps(p["architecture_metadata"]), json.dumps(p["impact_metrics"]),
-                p["github_url"], p["live_demo_url"], p["is_featured"], p["display_order"]
+                proj["slug"], proj["title"], proj["tagline"], proj["problem_statement"],
+                proj["solution_overview"], json.dumps(proj["architecture_metadata"]),
+                json.dumps(proj["impact_metrics"]), proj["github_url"], proj["live_demo_url"],
+                proj["is_featured"], proj["display_order"], vec_str
             )
 
-        # Seed Experiences
-        print("Seeding Experience...")
+        # 3. Seed Experiences with Direct Vector Embeddings
+        print("Seeding Experiences with Direct Vector Embeddings...")
         for exp in SEED_EXPERIENCES:
+            text_to_embed = f"{exp['role']} at {exp['company']}. Summary: {exp['summary']} Achievements: {' '.join(exp['achievements'])}"
+            embedding = get_embedding(text_to_embed)
+            vec_str = f"[{','.join(str(x) for x in embedding)}]"
+
             await conn.execute(
                 """
-                INSERT INTO experiences (company, role, location, employment_type, start_date, end_date, summary, achievements)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                INSERT INTO experiences (company, role, location, employment_type, start_date, end_date, summary, achievements, embedding)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CAST($9 AS vector))
                 """,
                 exp["company"], exp["role"], exp["location"], exp["employment_type"],
-                exp["start_date"], exp["end_date"], exp["summary"], exp["achievements"]
+                exp["start_date"], exp["end_date"], exp["summary"], exp["achievements"], vec_str
             )
 
-        # Seed Tradeoffs
+        # 4. Seed Relational FAQs with Direct Vector Embeddings
+        print("Seeding Relational FAQs with Direct Vector Embeddings...")
+        for faq in SEED_FAQS:
+            text_to_embed = f"Question: {faq['question']} Answer: {faq['answer']}"
+            embedding = get_embedding(text_to_embed)
+            vec_str = f"[{','.join(str(x) for x in embedding)}]"
+
+            await conn.execute(
+                """
+                INSERT INTO faqs (question, answer, category, related_project_slug, related_company_slug, embedding)
+                VALUES ($1, $2, $3, $4, $5, CAST($6 AS vector))
+                """,
+                faq["question"], faq["answer"], faq["category"],
+                faq["related_project_slug"], faq["related_company_slug"], vec_str
+            )
+
+        # 5. Seed System Tradeoffs
         print("Seeding System Tradeoffs...")
         for t in SEED_TRADEOFFS:
             await conn.execute(
@@ -360,41 +364,23 @@ async def seed():
                 INSERT INTO system_tradeoffs (topic, context_slug, decision, alternatives_considered, rationale, tradeoffs_accepted)
                 VALUES ($1, $2, $3, $4, $5, $6)
                 """,
-                t["topic"], t["context_slug"], t["decision"], t["alternatives_considered"], t["rationale"], t["tradeoffs_accepted"]
+                t["topic"], t["context_slug"], t["decision"], t["alternatives_considered"],
+                t["rationale"], t["tradeoffs_accepted"]
             )
 
-        # Seed Chunks (Embeddings + TSVector)
-        print("Seeding Knowledge Chunks into portfolio_chunks with 768-dim vectors...")
-        for chunk in SEED_CHUNKS:
-            text_for_embed = f"{chunk['title']} {chunk['content']}"
-            embedding = get_embedding(text_for_embed)
-            vec_str = f"[{','.join(str(x) for x in embedding)}]"
-            
-            await conn.execute(
-                """
-                INSERT INTO portfolio_chunks (entity_type, slug, title, content, metadata, embedding)
-                VALUES ($1, $2, $3, $4, $5, $6::vector)
-                """,
-                chunk["entity_type"], chunk["slug"], chunk["title"], chunk["content"],
-                json.dumps(chunk["metadata"]), vec_str
-            )
-
-        print("Database Seeding Completed Successfully! All AI/ML portfolio chunks and SQL records ready.")
+        print("Database Seeding Completed Successfully! All primary entities (Projects, Experiences, FAQs) vectorized.")
 
     finally:
         await conn.close()
 
 if __name__ == "__main__":
-    confirm_prod = "--confirm-prod" in sys.argv or "--prod" in sys.argv
-    if is_production_db(DATABASE_URL) and not confirm_prod:
-        masked_url = DATABASE_URL
-        if "@" in masked_url:
-            user_part, host_part = masked_url.split("@", 1)
-            masked_url = f"{user_part.split('://')[0]}://***:***@{host_part}"
-        print(f"\n[ERROR] Production/Cloud database target detected!")
-        print(f"Target URL: {masked_url}")
-        print(f"To seed a production database, pass '--confirm-prod': python scripts/seed_data.py --confirm-prod\n")
+    if is_production_db(DATABASE_URL) and "--confirm-prod" not in sys.argv:
+        print("\n" + "="*80)
+        print("CRITICAL WARNING: DETECTED PRODUCTION CLOUD DATABASE")
+        print(f"Connection URL: {DATABASE_URL}")
+        print("Execution aborted to protect production data.")
+        print("To override and seed production, run: python scripts/seed_data.py --confirm-prod")
+        print("="*80 + "\n")
         sys.exit(1)
-    
-    asyncio.run(seed())
 
+    asyncio.run(seed())
