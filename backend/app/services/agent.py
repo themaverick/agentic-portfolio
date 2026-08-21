@@ -2,19 +2,65 @@ import asyncio
 import json
 import time
 import uuid
-from typing import AsyncGenerator, Dict, Any, Tuple, Optional
+from typing import AsyncGenerator, Dict, Any, Tuple, Optional, List
 from sqlalchemy.ext.asyncio import AsyncSession
 from google import genai
 from google.genai import types
 
 from app.core.config import settings
 from app.core.kafka import produce_event
+from app.core.redis import get_redis
 from app.services.retrieval import (
     search_all_entities_hybrid,
     search_projects_hybrid,
     search_experiences_hybrid,
     search_faqs_hybrid
 )
+
+# --- Fallback In-Memory Session Storage ---
+IN_MEMORY_SESSIONS: Dict[str, List[Dict[str, str]]] = {}
+
+async def load_session_history(session_id: str, max_turns: int = 10) -> List[Dict[str, str]]:
+    """Loads session turn history from Redis or in-memory fallback cache."""
+    try:
+        r = get_redis()
+        raw_data = await r.get(f"session:{session_id}:history")
+        if raw_data:
+            turns = json.loads(raw_data)
+            return turns[-max_turns:]
+    except Exception as e:
+        print(f"Redis session history load error (using in-memory fallback): {e}")
+    
+    return IN_MEMORY_SESSIONS.get(session_id, [])[-max_turns:]
+
+async def save_session_history(session_id: str, user_msg: str, assistant_response: str):
+    """Persists user and assistant response turns to Redis and in-memory fallback cache."""
+    turns = await load_session_history(session_id, max_turns=20)
+    turns.append({"role": "user", "content": user_msg})
+    turns.append({"role": "model", "content": assistant_response})
+    
+    IN_MEMORY_SESSIONS[session_id] = turns
+
+    try:
+        r = get_redis()
+        await r.set(f"session:{session_id}:history", json.dumps(turns), ex=86400)
+    except Exception as e:
+        print(f"Redis session history save error: {e}")
+
+def build_gemini_history(past_turns: List[Dict[str, str]]) -> List[types.Content]:
+    """Converts stored turn dictionary objects to Gemini types.Content objects."""
+    contents = []
+    for turn in past_turns:
+        role = turn.get("role", "user")
+        text = turn.get("content", "")
+        if text:
+            contents.append(
+                types.Content(
+                    role="user" if role == "user" else "model",
+                    parts=[types.Part(text=text)]
+                )
+            )
+    return contents
 
 # --- Tool Declarations for Gemini Function Calling ---
 
@@ -177,6 +223,10 @@ async def stream_agent_chat(
     prompt_tokens = len(user_message) // 4 + len(SYSTEM_PROMPT) // 4
     completion_tokens = 0
 
+    # Load past session turns from Redis / Memory
+    past_turns = await load_session_history(session_id)
+    history_contents = build_gemini_history(past_turns)
+
     if settings.GEMINI_API_KEY:
         try:
             client = genai.Client(api_key=settings.GEMINI_API_KEY)
@@ -185,7 +235,11 @@ async def stream_agent_chat(
                 tools=AVAILABLE_TOOLS,
                 temperature=0.2
             )
-            chat = client.chats.create(model=settings.GEMINI_MODEL, config=config)
+            chat = client.chats.create(
+                model=settings.GEMINI_MODEL,
+                config=config,
+                history=history_contents if history_contents else None
+            )
 
             # Stage 1: Stream initial thoughts and collect requested function calls
             pending_fcalls = []
@@ -337,6 +391,9 @@ async def stream_agent_chat(
             chunk_str = " ".join(words[i:i+3]) + " "
             generated_text += chunk_str
             yield format_sse("chunk", {"token": chunk_str})
+
+    if generated_text.strip():
+        await save_session_history(session_id, user_message, generated_text.strip())
 
     completion_tokens = len(generated_text) // 4
     total_ms = (time.time() - start_time) * 1000
