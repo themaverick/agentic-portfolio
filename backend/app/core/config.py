@@ -1,11 +1,19 @@
+from pathlib import Path
 from typing import List, Union
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(".env.local", ".env"),
+        env_file=(
+            str(BASE_DIR / ".env.local"),
+            str(BASE_DIR / ".env"),
+            ".env.local",
+            ".env",
+        ),
         env_file_encoding="utf-8",
         extra="ignore"
     )

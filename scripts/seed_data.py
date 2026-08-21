@@ -293,7 +293,9 @@ async def seed():
     conn = await asyncpg.connect(DATABASE_URL)
     try:
         print("Ensuring tables and HNSW / TSVector extensions exist...")
-        with open("docs/database/postgres_schema.sql", "r") as f:
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        schema_path = os.path.join(base_dir, "docs", "database", "postgres_schema.sql")
+        with open(schema_path, "r") as f:
             schema_sql = f.read()
         await conn.execute(schema_sql)
         print("PostgreSQL schema initialized successfully.")

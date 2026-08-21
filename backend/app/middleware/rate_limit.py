@@ -1,6 +1,7 @@
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
+from app.core.config import settings
 from app.core.redis import check_rate_limit
 
 
@@ -17,8 +18,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.window_seconds = window_seconds
 
     async def dispatch(self, request: Request, call_next):
-        # Exclude docs, health, telemetry stats, static options requests
-        if request.url.path in ["/docs", "/openapi.json", "/health", "/api/v1/telemetry/stats"] or request.method == "OPTIONS":
+        # Exclude docs, health, telemetry stats, static options requests, or bypass in development mode
+        if settings.is_development or request.url.path in ["/docs", "/openapi.json", "/health", "/api/v1/telemetry/stats"] or request.method == "OPTIONS":
             return await call_next(request)
 
         # Extract client IP

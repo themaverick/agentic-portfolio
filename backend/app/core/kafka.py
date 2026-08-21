@@ -10,14 +10,19 @@ producer: AIOKafkaProducer = None
 
 async def get_kafka_producer() -> AIOKafkaProducer:
     global producer
+    if not settings.KAFKA_BOOTSTRAP_SERVERS:
+        return None
+
     if producer is None:
         try:
-            producer = AIOKafkaProducer(
+            p = AIOKafkaProducer(
                 bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
                 value_serializer=lambda v: json.dumps(v).encode("utf-8"),
                 key_serializer=lambda k: k.encode("utf-8") if k else None,
+                request_timeout_ms=2000,
             )
-            await producer.start()
+            await p.start()
+            producer = p
         except Exception as e:
             logger.warning(f"Kafka connection failed (running in fallback mode): {e}")
             producer = None
